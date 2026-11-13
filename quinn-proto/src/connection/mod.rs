@@ -1303,6 +1303,15 @@ impl Connection {
         self.spaces[self.highest_space].ping_pending = true;
     }
 
+    /// Send a loss probe now, as if the probe timeout had fired, without
+    /// backing the timeout off further. Unlike `ping`, the probe is not held
+    /// back by the congestion window, which is full after an outage.
+    pub fn probe_now(&mut self) {
+        let space = self.highest_space;
+        self.spaces[space].loss_probes = self.spaces[space].loss_probes.saturating_add(1);
+        self.spaces[space].ping_pending = true;
+    }
+
     /// Update traffic keys spontaneously
     ///
     /// This can be useful for testing key updates, as they otherwise only happen infrequently.
